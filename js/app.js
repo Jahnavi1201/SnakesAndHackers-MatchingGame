@@ -1,167 +1,383 @@
-/*** This javascript file contain all the logic that is required for the "memory game" ***/
+/***This CSS file contain all the styles required for game components***/
 
 
-"use strict";
-var clickedcards = []; //variables required are declared here.
-var no_of_moves = 0;
-var match_cnt = 0;
-var sec = 1;
-var min = 0;
-var ind = 0;
-var interval;
-var total_time;
-var cards = [...document.querySelectorAll(".card")]; //"DOM selectors" are used to get elements by class name.
-var star = [...document.querySelectorAll(".fa-star")];
-var modal = document.querySelector(".Modalbox");
-var close = document.querySelector(".close");
-var p = document.querySelector(".pause");
-var pr = document.querySelector(".pauseresume");
-var pa = document.querySelector(".play_again");
-var deck = document.querySelector(".deck");
-var card = shuffle(cards);
-var beep = new Audio(); //Objects are created for the "Audio" class.
-beep.src = "./sounds/click.mp3";
-var incorrect = new Audio();
-incorrect.src = "./sounds/incorrect.mp3";
-var gamewin = new Audio();
-gamewin.src = "./sounds/gamewin.mp3";
-//The following code makes the game window to be closed when clicked on "close" button.
-close.onclick = function() {
-  modal.style.display = "none";
+html {
+  box-sizing: border-box;
 }
-for (var i = 0; i < 16; i++) {
-  [].forEach.call(cards, (lst) => {
-    deck.appendChild(lst);
-  });
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
 }
-//The following code makes the game to be reloaded when clicked on "play again" button.
-document.querySelector(".play_again").addEventListener("click", restart_Game)
-//The following code makes the game to be reloaded when clicked on "restart" button.
-document.querySelector(".restart").addEventListener("click", restart_Game);
-//The following code makes the game to be resumed when clicked on "resumediv" division*/
-document.querySelector(".resumediv").addEventListener("click", resume_Game);
-//The following code makes the game to be reloaded when clicked on "restartdiv" division*/
-document.querySelector(".restartdiv").addEventListener("click", restart_Game);
-//The following code makes the game to be paused when clicked on "pause" button.
-document.querySelector(".pause").addEventListener("click", pause_Game);
-//The following loop makes the card to be flipped when clicked on it.
-for (var i in cards) {
-  cards[i].addEventListener("click", displayCard);
+
+/*Styles for body*/
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
-//The following function is invoked when clicked on a card.
-function displayCard() {
-  beep.play();
-  if (ind == 0) {
-    time();
+
+/* Background pattern*/
+body {
+  background: #ffffff url('../img/geometry2.png');
+  font-family: 'Coda', cursive;
+}
+
+/*Styles for container*/
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+h1 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 300;
+}
+
+/*Styles for deck of cards in the game window*/
+.deck {
+  width: 650px;
+  min-height: 610px;
+  background: linear-gradient(160deg, #e3be90 30%, #ed9e8c 70%);
+  padding: 32px;
+  border-radius: 5%;
+  box-shadow: 12px 15px 20px 0 rgba(46, 61, 73, 0.5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0;
+}
+
+.deck .card {
+  height: 115px;
+  width: 120px;
+  background: #2e3d49;
+  font-size: 0;
+  color: black;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 5px 2px 20px 0 rgba(46, 61, 73, 0.5);
+}
+
+.deck .card.open {
+  transform: rotateY(0);
+  background: linear-gradient(160deg, #e3be90 30%, #ed9e8c 70%);
+  cursor: default;
+}
+
+.deck .card.show {
+  font-size: 33px;
+}
+
+.deck .card.match {
+  cursor: default;
+  background: linear-gradient(200deg, #ed9e8c 30%, #e3be90 70%);
+  font-size: 33px;
+}
+
+.disabled {
+  pointer-events: none;
+}
+
+/*Styles for the score panel*/
+.score-panel {
+  text-align: left;
+  width:500px;
+  margin-bottom: 10px;
+  font-size: 15pt;
+}
+
+.score-panel .stars {
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+  margin: 0 5px 0 0;
+  margin-right: 20px;
+}
+
+.score-panel .stars li {
+  list-style: none;
+  display: inline-block;
+}
+
+.score-panel .restart {
+  float: right;
+  cursor: pointer;
+  margin-right: 0px;
+  position: relative;
+}
+
+.restarttext {
+  visibility: hidden;
+}
+
+.score-panel .restart:hover .fa-repeat {
+  transform: scale(1.2);
+}
+
+.restart:hover .restarttext {
+  visibility: visible;
+}
+
+
+
+.pausediv {
+  position: relative;
+}
+
+.pausetext {
+  visibility: hidden;
+  margin-right: 40px;
+}
+
+.pause {
+  border-radius: 10px;
+}
+
+.pause:hover {
+  transform: scale(1.1);
+  cursor: pointer;
+}
+
+.pausediv:hover .pausetext {
+  visibility: visible;
+}
+
+.moves {
+  margin-right: 20px;
+}
+
+/*Styles for "wobble" class*/
+.animated {
+  animation-duration: 1s;
+  animation-fill-mode: both;
+}
+
+@keyframes wobble {
+  0% {
+    transform: translateX(0%);
   }
-  clickedcards.push(this);
-  this.classList.add("open", "show", "disabled");
-  if (clickedcards.length == 2) {
-    setTimeout(compare, 300);
+
+  15% {
+    transform: translateX(-25%) rotate(-5deg);
+  }
+
+  30% {
+    transform: translateX(20%) rotate(3deg);
+  }
+
+  45% {
+    transform: translateX(-15%) rotate(-3deg);
+  }
+
+  60% {
+    transform: translateX(10%) rotate(2deg);
+  }
+
+  75% {
+    transform: translateX(-5%) rotate(-1deg);
+  }
+
+  100% {
+    transform: translateX(0%);
+    transform: scale(1.1);
   }
 }
-//The following function performs the comparison of two clicked cards.
-function compare() {
-  mcount();
-  if (clickedcards[0].children[0].className == clickedcards[1].children[0].className) {
-    // The following code execute if the clicked two cards matches.
-    clickedcards[0].classList.add("match", "animated", "wobble");
-    clickedcards[1].classList.add("match", "animated", "wobble");
-    clickedcards[0].classList.remove("open", "show");
-    clickedcards[1].classList.remove("open", "show");
-    clickedcards[0].style.borderRadius = "50%";
-    clickedcards[1].style.borderRadius = "50%";
-    match_cnt += 1;
-  } else {
-    incorrect.play();
-    // The following code execute if the clicked two cards doesn't not match
-    clickedcards[0].classList.remove("open", "show", "disabled");
-    clickedcards[1].classList.remove("open", "show", "disabled");
+
+.wobble {
+  animation-name: wobble;
+}
+
+/*Styles for "wobble1" class*/
+@keyframes wobble1 {
+  0% {
+    transform: translateX(0%);
   }
-  clickedcards = [];
-  //The following code makes a window to be popped-up when the player makes 8 matches.
-  if (match_cnt == 8) {
-    //The following code execute if the player make 8 matches.
-    for (var i in cards) {
-      cards[i].classList.add("animated", "wobble1");
-    }
-    clearInterval(interval);
-    gamewin.play();
-    document.querySelector(".tot_moves").innerHTML = "<b>You have made </b>" + no_of_moves + " moves";
-    total_time = min + " min " + (sec - 1) + " sec";
-    document.querySelector(".tot_time").innerHTML = "<b>in </b>" + total_time;
-    setTimeout(function() {
-      modal.style.display = "block";
-    }, 2000);
-    var final_star = [...document.querySelector(".stars").children];
-    document.querySelector(".final_stars").children[0].className = final_star[0].children[0].className;
-    document.querySelector(".final_stars").children[1].className = final_star[1].children[0].className;
-    document.querySelector(".final_stars").children[2].className = final_star[2].children[0].className;
+
+  15% {
+    transform: translateX(-25%) rotate(-5deg);
   }
-  //The following code performs star rating based on specified conditions.
-  if (no_of_moves == 15) {
-    star[2].classList.add("fa-star-o");
-    star[2].classList.remove("fa-star");
+
+  30% {
+    transform: translateX(20%) rotate(3deg);
   }
-  if (no_of_moves == 20) {
-    star[1].classList.add("fa-star-o");
-    star[1].classList.remove("fa-star");
+
+  45% {
+    transform: translateX(-15%) rotate(-3deg);
+  }
+
+  60% {
+    transform: translateX(10%) rotate(2deg);
+  }
+
+  75% {
+    transform: translateX(-5%) rotate(-1deg);
+  }
+
+  100% {
+    transform: translateX(0%);
+    transform: scale(1.3);
   }
 }
-//The following function manages count of moves.
-function mcount() {
-  no_of_moves += 1;
-  document.querySelector(".moves").innerHTML = no_of_moves;
+
+.wobble1 {
+  animation-name: wobble1;
 }
-//The following function makes the game window to be reloaded.
-function restart_Game() {
-  window.location.reload();
+
+/*Styles for the window that will be displayed at the end of the game*/
+.Modalbox {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #e3be90 30%, #ed9e8c 70%);
 }
-var m = document.querySelector(".minute");
-var s = document.querySelector(".second");
-//The following function holds the time taken for completing the game.
-function time() {
-  ind = 1;
-  interval = setInterval(() => {
-    if (sec < 10) {
-      s.innerHTML = "0" + sec;
-    } else {
-      s.innerHTML = sec;
-    }
-    if (min < 10) {
-      m.innerHTML = "0" + min;
-    } else {
-      m.innerHTML = min;
-    }
-    sec += 1;
-    if (sec == 60) {
-      min += 1;
-      sec = 0;
-    }
-  }, 1000);
+
+/*Styles for the content of the window that will be displayed at the end of the game*/
+.Modalcontent {
+  text-align: center;
+  background: #ffffff url('../img/tenor.gif');
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10% auto;
+  width: 50%;
+  height: auto;
+  font-family: cursive;
+  font-size: 20pt;
+  float: center;
 }
-/*The following function makes the timer to be stopped and a pop-up window to be displayed when clicked on
-pause button*/
-function pause_Game() {
-  clearInterval(interval);
-  pr.style.display = "block";
+
+/*Styles for the Close Button */
+.close {
+  float: right;
+  float: top;
+  border: none;
+  padding: 1px;
+  background: linear-gradient(160deg, #F1948A 0%, #D35400 100%);
+  width: 20px;
+  height: 20px;
+  color: black;
+  font-weight: bold;
+  border-radius: 5px;
+  border-color: white;
+  font-size: 14pt;
 }
-/*The following function makes the timer to be resumed and the unhidden pop-up window to be hidden when
-clicked on resume division*/
-function resume_Game() {
-  pr.style.display = "none";
-  time();
+
+.close:hover,
+.close:focus {
+  transform: scale(1.2);
+  cursor: pointer;
 }
-//The following function holds the code for shuffling the cards.
-function shuffle(array) {
-  var currentIndex = array.length,
-    temporaryValue, randomIndex;
-  while (currentIndex !== 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
+
+/*Styles for the rating division*/
+.rating {
+  display: flex;
+  flex-wrap: wrap;
+  height:20%;
+  justify-content: space-around;
+  padding-right: 25px;
+}
+/*Styles for the play again button*/
+.play_again {
+  border-radius: 10px;
+  font-weight: bold;
+  height: 40px;
+  font-family: cursive;
+  background: linear-gradient(160deg, #ed9e8c 30%, #e3be90 70%);
+  cursor: pointer;
+  border-style: solid;
+  font-size: 15pt;
+}
+
+.play_again:hover {
+  transform: scale(1.1);
+}
+
+/*Styles for the content of the window that will be displayed when clicked on pause button*/
+.pauseresume {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+}
+
+.pauseresumecontent {
+  text-align: center;
+  background: linear-gradient(160deg, #e3be90 30%, #ed9e8c 70%);
+  padding: 10px;
+  border-radius: 10px;
+  margin: 15% auto;
+  width: 30%;
+  height: auto;
+  display: flex;
+  justify-content: space-around;
+}
+
+.resume, .restart {
+  border-radius: 50%;
+}
+
+.resumediv, .restartdiv {
+  background-color: white;
+  border-radius: 10%;
+  cursor: pointer;
+  height: 150px;
+}
+
+.resumediv:hover, .restartdiv:hover {
+  transform: scale(1.1);
+  border-radius: 40px;
+}
+@media screen and (min-width:320px) and (max-width:500px){
+  h1{
+    font-size: 25px;
   }
-  return array;
+  .deck{
+    width:90vw;
+    min-height:400px;
+    padding: 5px;
+    justify-content: space-around;
+  }
+  .deck .card {
+    height: 65px;
+    width: 65px;
+    margin:5px;
+  }
+ .score-panel{
+   width:80vw;
+ }
+ .pausetext{
+   margin-right: 0px;
+   font-size: 0pt;
+ }
+ .score-panel .stars{
+   margin-right: 0px;
+ }
+ .moves{
+   margin-right: 0px;
+ }
+ .restarttext{
+   font-size: 0pt;
+ }
+ .pauseresumecontent{
+   height:auto;
+   width:80vw;
+ }
+ .Modalcontent{
+   width:90vw;
+ }
 }
