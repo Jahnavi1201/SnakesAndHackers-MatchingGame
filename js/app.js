@@ -87,7 +87,7 @@ function compare() {
     }
     clearInterval(interval);
     gamewin.play();
-    document.querySelector(".tot_moves").innerHTML = "<b>You have made </b>" + no_of_moves + " moves";
+    document.querySelector(".tot_moves").innerHTML = "<b>You have made </b>" + no_of_moves + " flips";
     total_time = min + " min " + (sec - 1) + " sec";
     document.querySelector(".tot_time").innerHTML = "<b>in </b>" + total_time;
     setTimeout(function() {
